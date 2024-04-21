@@ -28,6 +28,7 @@ c
       use mod_vcoord, only: vcoord_type_tag, cntiso_hybrid
       use mod_tidaldissip, only: read_tidaldissip
       use mod_difest, only: init_difest
+      use mod_eddtra, only: init_eddtra
 c
       implicit none
 c
@@ -50,6 +51,8 @@ c
       if (vcoord_type_tag == cntiso_hybrid) then
         call init_difest
       endif
+c
+      call init_eddtra
 c
       return
       end

@@ -46,12 +46,14 @@ c
       use mod_forcing, only: ditflx, disflx, sprfac,
      .                       tflxdi, sflxdi, nflxdi,
      .                       prfac, eiacc, pracc,
-     .                       flxco2, flxdms, flxbrf, ustarb, buoyfl
+     .                       flxco2, flxdms, flxbrf,
+     .                       ustarb, wstar3, buoyfl
       use mod_niw, only: uml, vml, umlres, vmlres
       use mod_difest, only: OBLdepth
       use mod_diffusion, only: difiso, Kvisc_m, Kdiff_t, Kdiff_s,
      .                         t_ns_nonloc, s_nb_nonloc,
      .                         mu_nonloc, mv_nonloc
+      use mod_eddtra, only: hbl_tf, wpup_tf, hml_tf1, hml_tf
       use mod_cesm, only: frzpot, mltpot, swa_da, nsf_da, hmlt_da,
      .                    lip_da, sop_da, eva_da, rnf_da, rfi_da,
      .                    fmltfz_da, sfl_da, ztx_da, mty_da, ustarw_da,
@@ -529,6 +531,11 @@ c
         call ncread('s_nb_nonloc',s_nb_nonloc,ip,1,0.)
         call ncread('mu_nonloc',mu_nonloc,iu,1,0.)
         call ncread('mv_nonloc',mv_nonloc,iv,1,0.)
+        call ncread('wstar3',wstar3,ip,1,0.)
+        call ncread('hbl_tf',hbl_tf,ip,1,0.)
+        call ncread('wpup_tf',wpup_tf,ip,1,0.)
+        call ncread('hml_tf1',hml_tf1,ip,1,0.)
+        call ncread('hml_tf',hml_tf,ip,1,0.)
       endif
 c
       if (sprfac) then

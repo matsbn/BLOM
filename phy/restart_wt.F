@@ -44,12 +44,14 @@ c
       use mod_forcing, only: ditflx, disflx, sprfac,
      .                       tflxdi, sflxdi, nflxdi,
      .                       prfac, eiacc, pracc,
-     .                       flxco2, flxdms, ustarb, buoyfl,flxbrf
+     .                       flxco2, flxdms, flxbrf,
+     .                       ustarb, wstar3, buoyfl
       use mod_niw, only: uml, vml, umlres, vmlres
       use mod_difest, only: OBLdepth
       use mod_diffusion, only: difiso, Kvisc_m, Kdiff_t, Kdiff_s,
      .                         t_ns_nonloc, s_nb_nonloc,
      .                         mu_nonloc, mv_nonloc
+      use mod_eddtra, only: hbl_tf, wpup_tf, hml_tf1, hml_tf
       use mod_cesm, only: frzpot, mltpot, swa_da, nsf_da, hmlt_da,
      .                    lip_da, sop_da, eva_da, rnf_da, rfi_da,
      .                    fmltfz_da, sfl_da, ztx_da, mty_da, ustarw_da,
@@ -310,6 +312,11 @@ c
      .              s_nb_nonloc,ip)
         call wrtrst('mu_nonloc',trim(c5u)//' kkp1 time',mu_nonloc,iu)
         call wrtrst('mv_nonloc',trim(c5v)//' kkp1 time',mv_nonloc,iv)
+        call wrtrst('wstar3',trim(c5p)//' time',wstar3,ip)
+        call wrtrst('hbl_tf',trim(c5p)//' time',hbl_tf,ip)
+        call wrtrst('wpup_tf',trim(c5p)//' time',wpup_tf,ip)
+        call wrtrst('hml_tf1',trim(c5p)//' time',hml_tf1,ip)
+        call wrtrst('hml_tf',trim(c5p)//' time',hml_tf,ip)
         call wrtrst('umflsm',trim(c5u)//' kk2 time',umflsm,iuu)
         call wrtrst('utflsm',trim(c5u)//' kk2 time',utflsm,iuu)
         call wrtrst('usflsm',trim(c5u)//' kk2 time',usflsm,iuu)
@@ -991,6 +998,11 @@ c
         call defvarrst('s_nb_nonloc',trim(c5p)//' kkp1 time')
         call defvarrst('mu_nonloc',trim(c5u)//' kkp1 time')
         call defvarrst('mv_nonloc',trim(c5v)//' kkp1 time')
+        call defvarrst('wstar3',trim(c5p)//' time')
+        call defvarrst('hbl_tf',trim(c5p)//' time')
+        call defvarrst('wpup_tf',trim(c5p)//' time')
+        call defvarrst('hml_tf1',trim(c5p)//' time')
+        call defvarrst('hml_tf',trim(c5p)//' time')
         call defvarrst('umflsm',trim(c5u)//' kk2 time')
         call defvarrst('utflsm',trim(c5u)//' kk2 time')
         call defvarrst('usflsm',trim(c5u)//' kk2 time')

@@ -139,7 +139,8 @@ module mod_forcing
       tauy, &         ! v-component of surface stress [g cm-1 s-2].
       ustar, &        ! Surface friction velocity [cm s-1].
       ustarb, &       ! Bottom friction velocity [cm s-1].
-      ustar3          ! Friction velocity cubed [cm3 s-3].
+      ustar3, &       ! Friction velocity cubed [cm3 s-3].
+      wstar3          ! Convective velocity cubed [cm3 s-3].
 
    ! Flux fields at model interfaces.
 
@@ -163,7 +164,7 @@ module mod_forcing
              ustarw, slp, abswnd, lamult, lasl, ustokes, vstokes, &
              atmco2, flxco2, flxdms, flxbrf, atmbrf, &
              surflx, surrlx, sswflx, salflx, brnflx, salrlx, taux, tauy, &
-             ustar, ustarb, ustar3, buoyfl, t_sw_nonloc, t_rs_nonloc, &
+             ustar, ustarb, ustar3, wstar3, buoyfl, t_sw_nonloc, t_rs_nonloc, &
              s_br_nonloc, s_rs_nonloc, inivar_forcing, fwbbal
 
 contains
@@ -215,6 +216,7 @@ contains
             ustar(i, j) = spval
             ustarb(i, j) = spval
             ustar3(i, j) = spval
+            wstar3(i, j) = spval
          enddo
       enddo
    !$omp end parallel do
@@ -260,6 +262,7 @@ contains
             flxbrf(i, j) = 0._r8
             ustar (i, j) = 0._r8
             ustarb(i, j) = 0._r8
+            wstar3(i, j) = 0._r8
          enddo
          enddo
       enddo

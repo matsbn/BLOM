@@ -40,6 +40,7 @@ c
       use mod_forcing, only: surflx, surrlx, sswflx,
      .                       salflx, brnflx, salrlx,
      .                       ustar, ustar3, buoyfl
+      use mod_eddtra, only: ce, lfmin, tau_mlr
       use mod_niw, only: niwgf, niwbf, idkedt
       use mod_utility, only: util1, util2, util3
       use mod_checksum, only: csdiag, chksummsk
@@ -59,12 +60,9 @@ c --- Variables to be set in namelist:
       real(r8) ::
      .  rm0,            ! Efficiency factor of wind TKE generation in
                         ! the Oberhuber (1993) TKE closure [].
-     .  rm5,            ! Efficiency factor of TKE generation by
+     .  rm5             ! Efficiency factor of TKE generation by
                         ! momentum entrainment in the Oberhuber (1993)
                         ! TKE closure [].
-     .  ce              ! Efficiency factor for the restratification by
-                        ! mixed layer eddies (Fox-Kemper et al., 2008)
-                        ! [].
       character(len = 80) ::
      .  mlrttp          ! Type of mixed layer restratification time
                         ! scale. Valid types: 'variable', 'constant',
@@ -96,7 +94,7 @@ c
      .  A_cgs2mks  = 1./(L_mks2cgs*L_mks2cgs),
      .  V_mks2cgs  = L_mks2cgs**3
 c
-      public :: rm0,rm5,ce,mlrttp,mltmin,
+      public :: rm0,rm5,mlrttp,mltmin,
      .          mtkeus,mtkeni,mtkebf,mtkers,mtkepe,mtkeke,pbrnda,
      .          inivar_mxlayr,mxlayr
 c
@@ -141,12 +139,13 @@ c
 c
       real, dimension(kdm+1) :: pres,po,pn
       real, dimension(kdm) :: ttem,ssal,delp,dens,densr,bc,uo,un
-      real q,alfa,beta,bfltot,bflpsw,pradd,pmxl,lui,lbi,lei,cus,cni,
-     .     cbftot,cbfpsw,crs,rm1,rm2,rm3,rm4,tkew,dpmxl,tkeo,dtke,tfsl,
-     .     sfsl,dpfsl,dptopl,dpt,pup,plo,drhup,drhlo,pbrnd,bcwsum,
-     .     bdpsum,tup,sup,dup,dsgdt,dsgds,bpc,bpmldp,pswbas,pswup,pswlo,
-     .     ttmp,stmp,sigtmp,sigfsl,tmxl0,smxl0,dpe0,tdps,sdps,tmxl,smxl,
-     .     dpe,dps,udpn,um,vm,dke,dke0,tkeu,tkel,uk,vk
+      real q,tmxl,smxl,rtau,rlf,alfa,beta,bfltot,bflpsw,pradd,pmxl,
+     .     lui,lbi,lei,cus,cni,cbftot,cbfpsw,crs,rm1,rm2,rm3,rm4,tkew,
+     .     dpmxl,tkeo,dtke,tfsl,sfsl,dpfsl,dptopl,dpt,pup,plo,
+     .     drhup,drhlo,pbrnd,bcwsum,bdpsum,tup,sup,dup,dsgdt,dsgds,
+     .     bpc,bpmldp,pswbas,pswup,pswlo,ttmp,stmp,sigtmp,sigfsl,
+     .     tmxl0,smxl0,dpe0,tdps,sdps,dpe,dps,udpn,um,vm,dke,dke0,
+     .     tkeu,tkel,uk,vk
       integer rtsflg,i,j,k,l,kn,kfpl,nitr,kmax,kfmax,ko
       logical chngd
 #ifdef TRC
@@ -174,16 +173,13 @@ c ---            of TKE balance [].
 c
 c --- Parameters for the parameterization of restratification by mixed
 c --- layer eddies by Fox-Kemper et al. (2008):
-c ---   rtau   - reciprocal of timescale for momentum mixing across
-c ---            mixed layer [1/s].
 c ---   cori20 - coriolis parameter at 20N [1/s].
-c ---   rlf    - reciprocal of length scale of mixed layer fronts
-c ---            [1/cm].
 c ---   ci     - constant that appears when integrating the shape
 c ---            function over the mixed layer depth [].
-      real rtau,cori20,rlf,ci,slbg0
-      parameter (rtau=1./86400.,cori20=4.9745e-5,
-     .           rlf=1./(5.e3*L_mks2cgs),ci=44./63.,slbg0=0.)
+c ---   slbg0  - background level of squared lateral buoyancy gradient
+c ---            [s-4].
+      real cori20,ci,slbg0
+      parameter (cori20=4.9745e-5,ci=44./63.,slbg0=0.)
 c
 c --- Parameters for brine plume parameterization:
 c ---   bpdrho - density contrast between surface and brine plume depth
@@ -284,6 +280,13 @@ c$OMP PARALLEL DO PRIVATE(l,i)
         enddo
       enddo
 c$OMP END PARALLEL DO
+c
+c --- ------------------------------------------------------------------
+c --- Some mixed layer restratification parameterization constants.
+c --- ------------------------------------------------------------------
+c
+      rtau = 1./tau_mlr
+      rlf=1./lfmin
 c
       if (rm5.gt.0.) then
         call xctilr(u(1-nbdy,1-nbdy,k1n), 1,kk, 1,1, halo_uv)
