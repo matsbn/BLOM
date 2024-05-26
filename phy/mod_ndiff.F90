@@ -54,9 +54,9 @@ module mod_ndiff
    real(r8), allocatable, dimension(:,:,:,:,:), target :: &
       tpc_src_rs, t_srcdi_rs
    real(r8), allocatable, dimension(:,:,:,:) :: flxconv_rs
-   real(r8), dimension(2,kdm,1-nbdy:idm+nbdy,2), target :: &
+   real(r8), dimension(2,kdm,1-nbdy:idm+nbdy,3), target :: &
       p_srcdi_rs, drhodt_srcdi_rs, drhods_srcdi_rs
-   integer, dimension(1-nbdy:idm+nbdy,2) :: ksmx_rs, kdmx_rs
+   integer, dimension(1-nbdy:idm+nbdy,3) :: ksmx_rs, kdmx_rs
 
    public :: ndiff_init, ndiff_prep_jslice, &
              ndiff_uflx_jslice, ndiff_vflx_jslice, &
@@ -963,9 +963,9 @@ contains
 #endif
 
       ! Allocate arrays depending on the tracer count.
-      allocate(tpc_src_rs(p_ord+1,kdm,ntr_loc,1-nbdy:idm+nbdy,2), &
-               t_srcdi_rs(2,kdm,ntr_loc,1-nbdy:idm+nbdy,2), &
-               flxconv_rs(kdm,ntr_loc,1-nbdy:idm+nbdy,2), &
+      allocate(tpc_src_rs(p_ord+1,kdm,ntr_loc,1-nbdy:idm+nbdy,3), &
+               t_srcdi_rs(2,kdm,ntr_loc,1-nbdy:idm+nbdy,3), &
+               flxconv_rs(kdm,ntr_loc,1-nbdy:idm+nbdy,3), &
                stat = errstat)
       if (errstat /= 0) then
          write(lp,*) 'Failed to allocate neutral diffusion arrays!'
@@ -1108,10 +1108,10 @@ contains
 
    end subroutine ndiff_uflx_jslice
 
-   subroutine ndiff_vflx_jslice(p_dst_rs, i_lb, i_ub, j, j_rs, mm, nn)
+   subroutine ndiff_vflx_jslice(p_dst_rs, i_lb, i_ub, j, j_rs_m, j_rs_p, mm, nn)
 
       real(r8), dimension(:,1-nbdy:,:), target, intent(in) :: p_dst_rs
-      integer, intent(in) :: i_lb, i_ub, j, j_rs, mm, nn
+      integer, intent(in) :: i_lb, i_ub, j, j_rs_m, j_rs_p, mm, nn
 
       real(r8), dimension(:,:,:), pointer :: &
          t_srcdi_m, tpc_src_m, t_srcdi_p, tpc_src_p
@@ -1120,29 +1120,27 @@ contains
       real(r8), dimension(:), pointer :: &
          p_dst_m, p_dst_p
       real(r8) :: cdiff, cnslp
-      integer :: j_rs_m, l, i, ksmx_m, ksmx_p, kdmx_m, kdmx_p
-
-      j_rs_m = 3 - j_rs
+      integer :: l, i, ksmx_m, ksmx_p, kdmx_m, kdmx_p
 
       do l = 1, isv(j)
       do i = max(i_lb, ifv(j, l)), min(i_ub, ilv(j, l))
 
          p_srcdi_m => p_srcdi_rs(:,:,i,j_rs_m)
-         p_srcdi_p => p_srcdi_rs(:,:,i,j_rs  )
+         p_srcdi_p => p_srcdi_rs(:,:,i,j_rs_p)
          t_srcdi_m => t_srcdi_rs(:,:,:,i,j_rs_m)
-         t_srcdi_p => t_srcdi_rs(:,:,:,i,j_rs  )
+         t_srcdi_p => t_srcdi_rs(:,:,:,i,j_rs_p)
          tpc_src_m => tpc_src_rs(:,:,:,i,j_rs_m)
-         tpc_src_p => tpc_src_rs(:,:,:,i,j_rs  )
+         tpc_src_p => tpc_src_rs(:,:,:,i,j_rs_p)
          drhodt_srcdi_m => drhodt_srcdi_rs(:,:,i,j_rs_m)
-         drhodt_srcdi_p => drhodt_srcdi_rs(:,:,i,j_rs  )
+         drhodt_srcdi_p => drhodt_srcdi_rs(:,:,i,j_rs_p)
          drhods_srcdi_m => drhods_srcdi_rs(:,:,i,j_rs_m)
-         drhods_srcdi_p => drhods_srcdi_rs(:,:,i,j_rs  )
+         drhods_srcdi_p => drhods_srcdi_rs(:,:,i,j_rs_p)
          p_dst_m => p_dst_rs(:,i,j_rs_m)
-         p_dst_p => p_dst_rs(:,i,j_rs  )
+         p_dst_p => p_dst_rs(:,i,j_rs_p)
          ksmx_m = ksmx_rs(i,j_rs_m)
-         ksmx_p = ksmx_rs(i,j_rs  )
+         ksmx_p = ksmx_rs(i,j_rs_p)
          kdmx_m = kdmx_rs(i,j_rs_m)
-         kdmx_p = kdmx_rs(i,j_rs  )
+         kdmx_p = kdmx_rs(i,j_rs_p)
          cdiff = delt1*scvx(i,j)*scvyi(i,j)
          cnslp = alpha0*scvyi(i,j)/g
 
@@ -1153,7 +1151,7 @@ contains
                         drhodt_srcdi_p, drhods_srcdi_p, &
                         p_dst_p, ksmx_p, kdmx_p, &
                         cdiff, cnslp, pv, vtflld, vsflld, vtflx, vsflx, nslpy, &
-                        i, j-1, i, j, j_rs_m, j_rs, mm, nn)
+                        i, j-1, i, j, j_rs_m, j_rs_p, mm, nn)
 
       enddo
       enddo

@@ -317,6 +317,7 @@ c --- ------------------------------------------------------------------
 c --- update some halos
 c --- ------------------------------------------------------------------
 c
+      call xctilr(sigmar, 1,kk, 2,2, halo_ps)
       call xctilr(uflx, 1,2*kk, 1,1, halo_uv)
       call xctilr(vflx, 1,2*kk, 1,1, halo_vv)
       call xctilr(phi(1-nbdy,1-nbdy,kk+1), 1,1, 2,2, halo_ps)
@@ -331,7 +332,6 @@ c
       call xctilr(vml, 1,4, 0,1, halo_vv)
       call xctilr(umlres, 1,2, 1,0, halo_uv)
       call xctilr(vmlres, 1,2, 0,1, halo_vv)
-      call xctilr(sigmar, 1,kk, 1,1, halo_ps)
 c
 c --- with arctic patch, switch xixp and xixm and xiyp and xiym in the
 c --- halo region adjacent to the arctic grid intersection
