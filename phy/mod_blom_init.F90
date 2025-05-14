@@ -58,20 +58,15 @@ module mod_blom_init
   implicit none
   private
 
-  public :: blom_init
+  public :: blom_init_phase1, blom_init_phase2
 
 contains
 
-  subroutine blom_init()
+  subroutine blom_init_phase1
   ! ------------------------------------------------------------------
-  ! initialize the model
+  ! Phase 1 of model initialization (everything except initial conditions)
   ! ------------------------------------------------------------------
 
-    ! Local variables
-    integer :: istat,ncid,varid,i,j,k,l,m,n,mm,nn,k1m,k1n,mt,mmt,kn,km
-    real    :: q
-    logical :: icrest,fexist
-    integer :: icrest_int
     ! ---------------------------------------------------------------
     ! Initialize SPMD processing
     ! ------------------------------------------------------------------
@@ -177,6 +172,18 @@ contains
 
     call diaini
 
+  end subroutine blom_init_phase1
+
+  subroutine blom_init_phase2
+  ! ------------------------------------------------------------------
+  ! Phase 2 of model initialization (initial conditions)
+  ! ------------------------------------------------------------------
+
+    ! Local variables
+    integer :: istat,ncid,varid,i,j,k,l,m,n,mm,nn,k1m,k1n,mt,mmt,kn,km
+    real    :: q
+    logical :: icrest,fexist
+
     ! ------------------------------------------------------------------
     ! Set up initial conditions or start from restart file
     ! ------------------------------------------------------------------
@@ -184,7 +191,6 @@ contains
     ! check whether initial condition file given in namelist is a
     ! restart file
     icrest = .false.
-    icrest_int = 0
     if (mnproc == 1) then
       if ( expcnf == 'cesm' .and. runtyp /= 'startup') then
         icrest = .true.
@@ -200,10 +206,8 @@ contains
           end if
         end if
       endif
-      if (icrest) icrest_int = 1
     end if
-    call xcbcst(icrest_int)
-    icrest = (icrest_int == 1)
+    call xcbcst(icrest)
 
     if (nday1+nint(time0) == 0.and..not.icrest) then
 
@@ -428,7 +432,7 @@ contains
       call flush(lp)
     end if
 
-  end subroutine blom_init
+  end subroutine blom_init_phase2
 
   subroutine numerical_bounds
   !------------------------------------------------------------------------
